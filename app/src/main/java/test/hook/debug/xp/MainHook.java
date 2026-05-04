@@ -179,30 +179,6 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         return true;
     }
 
-
-    private static final String getText(Bundle bundle) {
-        Object obj = bundle != null ? bundle.get("android.text") : null;
-        if (obj instanceof CharSequence) {
-            return obj.toString();
-        }
-        if (obj == null) {
-            return null;
-        }
-        return null;
-    }
-
-    private static final String getTitle(Bundle bundle) {
-        Object obj = bundle != null ? bundle.get("android.title") : null;
-        if (obj instanceof CharSequence) {
-            return obj.toString();
-        }
-        if (obj == null) {
-            return null;
-        }
-        return null;
-    }
-
-
     @SuppressLint("DiscouragedApi")
     private static void loadHook(ClassLoader classLoader) throws ClassNotFoundException {
         // 使用关于页的 Activity 初始化 EzXHelper 的 context
@@ -473,6 +449,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         DexKit.INSTANCE.initDexKit(loadPackageParam);
         DisableAd.interceptAd(loadPackageParam.classLoader);
         DisableAd.disableReport(loadPackageParam.classLoader);
+        DisableAd.hideAqView(loadPackageParam.classLoader);
 
         DisableKeepLinkNotify.disableDeviceSystemRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableTabRedDot(loadPackageParam.classLoader);

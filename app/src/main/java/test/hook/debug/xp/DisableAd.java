@@ -1,11 +1,16 @@
 package test.hook.debug.xp;
 
+import android.view.View;
+
 import com.github.kyuubiran.ezxhelper.ClassUtils;
 import com.github.kyuubiran.ezxhelper.HookFactory;
 import com.github.kyuubiran.ezxhelper.Log;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedHelpers;
 
 public class DisableAd {
     /**
@@ -39,5 +44,26 @@ public class DisableAd {
         } catch (ClassNotFoundException e) {
             Log.e("Failed to disable report", e);
         }
+    }
+
+    /**
+     * 隐藏蚂蚁阿福横幅
+     *
+     * @param classLoader
+     */
+    public static void hideAqView(ClassLoader classLoader) {
+        Class<?> AqViewClass;
+        try {
+            AqViewClass = classLoader.loadClass("com.xiaomi.fitness.view.AqView");
+        } catch (ClassNotFoundException e) {
+            return;
+        }
+        XposedHelpers.findAndHookMethod("com.xiaomi.fitness.util.ExtUtilKt", classLoader, "visible", android.view.View.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                if (((View) param.args[0]).getClass().equals(AqViewClass)) param.setResult(null);
+            }
+        });
     }
 }
