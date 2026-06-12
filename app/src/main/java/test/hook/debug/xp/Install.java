@@ -42,7 +42,7 @@ public class Install {
                 builder.append((char) read);
             }
         } catch (IOException e) {
-            Log.e(e, "getWatchFaceId");
+            Log.ex(e, "getWatchFaceId");
         }
         return builder.toString();
     }
@@ -62,7 +62,7 @@ public class Install {
             XposedHelpers.callMethod(manager, "manualUpgrade", new Class[]{Context.class, String.class, boolean.class},
                     context, path, false);
         } catch (Throwable e) {
-            Log.e(e, "invokeUpdate new version not found");
+            Log.ex(e, "invokeUpdate new version not found");
 
             // 旧版本
             Class<?> checkUpdateManagerImpl = XposedHelpers.findClass("com.mi.fitness.checkupdate.util.CheckUpdateManagerImpl", loader);
@@ -84,7 +84,7 @@ public class Install {
         try {
             String watchFaceId = getWatchFaceId(file);
             if (watchFaceId == null) {
-                Log.e("Failed to get id from " + file.getAbsolutePath(), null);
+                Log.ex("Failed to get id from " + file.getAbsolutePath(), null);
                 return;
             }
 
@@ -114,27 +114,27 @@ public class Install {
                     switch (method.getName()) {
                         case "onProgress": {
                             int pos = (int) args[0];
-                            Log.i("p: " + pos, null);
+                            Log.ix("p: " + pos, null);
                             progressBar.setProgress(pos);
                             break;
                         }
                         case "onFinish": {
                             boolean success = (boolean) args[0];
                             int code = (int) args[1];
-                            Log.i("success: " + success + " code: " + code, null);
+                            Log.ix("success: " + success + " code: " + code, null);
                             dialog.dismiss();
                             break;
                         }
                         case "onStart": {
-                            Log.i("start install", null);
+                            Log.ix("start install", null);
                             break;
                         }
                         default: {
-                            Log.e("Unknown value: " + method.getName(), null);
+                            Log.ex("Unknown value: " + method.getName(), null);
                         }
                     }
                 } catch (Throwable e) {
-                    Log.e(e, method.toString());
+                    Log.ex(e, method.toString());
                     if (dialog.isShowing()) {
                         dialog.dismiss();
                     }
@@ -174,7 +174,7 @@ public class Install {
             );
 
         } catch (Throwable e) {
-            Log.e(e, "installWatchFace");
+            Log.ex(e, "installWatchFace");
         }
     }
 

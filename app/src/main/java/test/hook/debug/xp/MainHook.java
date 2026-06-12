@@ -55,7 +55,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
 
             XposedHelpers.callMethod(instance, "gotoDebugPage", new Class<?>[]{Activity.class}, activity);
         } catch (Throwable e) {
-            Log.e(e, "gotoDebugPage");
+            Log.ex(e, "gotoDebugPage");
         }
     }
 
@@ -188,17 +188,17 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
 
         Class<?> thirdAppDebugFragment = XposedHelpers.findClass("com.xiaomi.xms.wearable.ui.debug.ThirdAppDebugFragment", classLoader);
         if (thirdAppDebugFragment == null) {
-            Log.e("ThirdAppDebugFragment not found", null);
+            Log.ex("ThirdAppDebugFragment not found", null);
             return;
         }
 
         Method methodStartWebView = EntryPoint.findEntryPoint();
         if (methodStartWebView == null) {
-            Log.e("Current version is not supported", null);
+            Log.ex("Current version is not supported", null);
             return;
         }
 
-        Log.i("Entry point " + methodStartWebView.toString(), null);
+        Log.ix("Entry point " + methodStartWebView.toString(), null);
 
         HookFactory.createMethodHook(methodStartWebView, hookFactory -> hookFactory.before(param -> {
             // 获取用户协议字符串
@@ -367,7 +367,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         // 如果要判断是不是支持小米专属勿扰同步的系统版本，可调用：
         // Lcom/xiaomi/fitness/devicesettings/common/zenmode/ZenModeSyncHelper;->isSupportZenRuleSync(Landroid/content/Context;)Z
         try {
-            XposedBridge.log("搜索 SystemServer 的匿名内部类...");
+            Log.ix("搜索 SystemServer 的匿名内部类...", null);
             boolean isHooked = false;
 
             for (int i = 1; i <= 25; i++) {
@@ -386,7 +386,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
                             boolean.class
                     );
 
-                    XposedBridge.log("找到目标匿名类: " + className);
+                    Log.ix("找到目标匿名类: " + className, null);
 
                     // 找到后直接Hook
                     XposedBridge.hookMethod(method, new XC_MethodHook() {
@@ -401,7 +401,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
 
                                 // 伪装：将包名强制篡改为 android
                                 param.args[0] = "android";
-                                XposedBridge.log("SystemServer: 匹配到小米运动健康，已执行UID提权并伪装包名");
+                                Log.ix("SystemServer: 匹配到小米运动健康，已执行UID提权并伪装包名", null);
                             }
                         }
 
@@ -416,7 +416,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
                     });
 
                     isHooked = true;
-                    XposedBridge.log("SystemServer: 匿名内部类 Hook 注入成功");
+                    Log.ix("SystemServer: 匿名内部类 Hook 注入成功", null);
                     break; // 命中目标后直接跳出循环，结束穷举
 
                 } catch (NoSuchMethodException e) {
@@ -425,11 +425,11 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
             }
 
             if (!isHooked) {
-                XposedBridge.log("查找setInterruptionFilter方法失败");
+                Log.ex("查找setInterruptionFilter方法失败", null);
             }
 
         } catch (Throwable t) {
-            XposedBridge.log("SystemServer穷举Hook异常: " + t);
+            Log.ex("SystemServer穷举Hook异常: ", t);
         }
     }
 

@@ -57,12 +57,12 @@ public class DisableKeepLinkNotify {
                     try {
                         field.set(methodHookParam.thisObject, null);
                     } catch (IllegalAccessException e) {
-                        Log.e(e, "");
+                        Log.ex(e, "");
                     }
                 });
             }
         } catch (NoSuchMethodError | Exception e) {
-            Log.e("Failed to disable red dot for device settings", e);
+            Log.ex("Failed to disable red dot for device settings", e);
         }
     }
 
@@ -75,7 +75,7 @@ public class DisableKeepLinkNotify {
                 }
             });
         } catch (NoSuchMethodError | Exception e) {
-            Log.e("Failed to disable red dot for tab", e);
+            Log.ex("Failed to disable red dot for tab", e);
         }
     }
 
@@ -88,7 +88,7 @@ public class DisableKeepLinkNotify {
                 }
             });
         } catch (NoSuchMethodError | Exception e) {
-            Log.e("Failed to disable keep link dialog", e);
+            Log.ex("Failed to disable keep link dialog", e);
         }
     }
 }

@@ -27,7 +27,7 @@ public class DisableAd {
                 }
             }
         } catch (ClassNotFoundException e) {
-            Log.e("Failed to disable ad", e);
+            Log.ex("Failed to disable ad", e);
         }
     }
 
@@ -42,7 +42,7 @@ public class DisableAd {
             }
 
         } catch (ClassNotFoundException e) {
-            Log.e("Failed to disable report", e);
+            Log.ex("Failed to disable report", e);
         }
     }
 
