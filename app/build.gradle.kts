@@ -1,6 +1,21 @@
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// 执行系统命令获取输出
+fun getCommandOutput(vararg command: String, default: String): String {
+    return try {
+        val process = ProcessBuilder(*command).redirectErrorStream(true).start()
+        process.waitFor()
+        process.inputStream.bufferedReader().readText().trim()
+    } catch (e: Exception) {
+        default
+    }
+}
+
+// 获取Git提交次数和简短Hash
+val gitCommitCount = getCommandOutput("git", "rev-list", "--count", "HEAD", default = "1").toIntOrNull() ?: 1
+val gitCommitHash = getCommandOutput("git", "rev-parse", "--short", "HEAD", default = "unknown")
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -13,9 +28,9 @@ android {
     defaultConfig {
         applicationId = "test.hook.debug"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 35
+        versionCode = gitCommitCount
+        versionName = gitCommitHash
         ndk {
             abiFilters.add("arm64-v8a")
         }
