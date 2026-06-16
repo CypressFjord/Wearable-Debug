@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -322,18 +321,18 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
             }
         });
 
-        // 显示系统设置-勿扰模式同步入口，并执行相关逻辑
-        try {
-            XposedHelpers.findAndHookMethod("com.xiaomi.fitness.devicesettings.utils.ZenUtils", classLoader, "isSupportZenMode", classLoader.loadClass("com.xiaomi.fitness.device.manager.export.WearableDeviceModel"), new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    super.beforeHookedMethod(param);
-                    param.setResult(true);
-                }
-            });
-        } catch (NoSuchMethodError e) {
-
-        }
+        // 显示系统设置-勿扰模式同步入口，并执行相关逻辑（旧版同步）
+//        try {
+//            XposedHelpers.findAndHookMethod("com.xiaomi.fitness.devicesettings.utils.ZenUtils", classLoader, "isSupportZenMode", classLoader.loadClass("com.xiaomi.fitness.device.manager.export.WearableDeviceModel"), new XC_MethodHook() {
+//                @Override
+//                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+//                    super.beforeHookedMethod(param);
+//                    param.setResult(true);
+//                }
+//            });
+//        } catch (NoSuchMethodError e) {
+//
+//        }
 
         try {
             // 修复：新版本日程导入适配了ColorOS，但是启用条件为厂商是oppo，导致一加无开关
@@ -454,6 +453,8 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         DisableKeepLinkNotify.disableDeviceSystemRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableTabRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableDialog(loadPackageParam.classLoader);
+
+        ZenSync.INSTANCE.hook(loadPackageParam);
 
         loadHook(loadPackageParam.classLoader);
         DexKit.INSTANCE.closeDexKit();
