@@ -50,7 +50,7 @@ public class EntryPoint {
                     try {
                         return invoker.getMethodInstance(EzXHelper.getClassLoader());
                     } catch (NoSuchMethodException e) {
-                        Log.e("Failed to instance entry point", e);
+                        Log.ex("Failed to instance entry point", e);
                     }
                 }
             }
@@ -71,7 +71,7 @@ public class EntryPoint {
             }
             return methodStartWebView;
         } catch (Exception e) {
-            Log.e("EntryPoint fallback failed", e);
+            Log.ex("EntryPoint fallback failed", e);
         }
         return null;
     }
