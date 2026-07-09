@@ -453,6 +453,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         DisableKeepLinkNotify.disableDeviceSystemRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableTabRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableDialog(loadPackageParam.classLoader);
+        DisableKeepLinkNotify.disableUnlimitBanner(loadPackageParam.classLoader);
 
         ZenSync.INSTANCE.hook(loadPackageParam);
 

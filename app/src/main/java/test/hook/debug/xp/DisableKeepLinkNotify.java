@@ -14,6 +14,7 @@ import org.luckypray.dexkit.result.UsingFieldData;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedHelpers;
 import test.hook.debug.xp.utils.DexKit;
@@ -89,6 +90,29 @@ public class DisableKeepLinkNotify {
             });
         } catch (NoSuchMethodError | Exception e) {
             Log.ex("Failed to disable keep link dialog", e);
+        }
+    }
+
+    /**
+     * 设备Tab“开启后台运行权限”Banner
+     * @param loader
+     */
+    public static void disableUnlimitBanner(ClassLoader loader) {
+        try {
+            XposedHelpers.findAndHookMethod("com.xiaomi.fitness.device.manager.ui.tab.DeviceBannerSettingsView", loader, "setRemindType", int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    super.beforeHookedMethod(param);
+                    // Lcom/xiaomi/fitness/device/manager/export/bean/TabDeviceBannerSettingsItem;
+                    // public static final int REMIND_TYPE_OFF = -1;
+                    // public static final int REMIND_TYPE_UN_LIMIT = 4;
+                    if ((int) param.args[0] == 4) {
+                        param.args[0] = -1;
+                    }
+                }
+            });
+        } catch (NoSuchMethodError | Exception e) {
+            Log.ex("Failed to disable unlimit banner", e);
         }
     }
 }
