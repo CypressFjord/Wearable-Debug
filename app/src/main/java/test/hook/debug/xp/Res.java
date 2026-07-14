@@ -16,6 +16,11 @@ public class Res {
     public static int success_log = -1;
     public static int main = -1;
     public static int options = -1;
+    public static int zen_sync_mode = -1;
+    public static int radio_no_hook = -1;
+    public static int radio_old_sync = -1;
+    public static int radio_new_sync = -1;
+//    public static int btn_check = -1;
 
     public static void init(XC_InitPackageResources.InitPackageResourcesParam resparam) {
         Resources modRes = EzXHelper.getModuleRes();
@@ -27,5 +32,10 @@ public class Res {
         success_log = resparam.res.addResource(modRes, R.string.success_log);
         main = resparam.res.addResource(modRes, R.layout.wearable_main);
         options = resparam.res.addResource(modRes, R.id.wearable_options);
+        zen_sync_mode = resparam.res.addResource(modRes, R.layout.zen_sync_mode);
+        radio_no_hook = resparam.res.addResource(modRes, R.id.radio_no_hook);
+        radio_old_sync = resparam.res.addResource(modRes, R.id.radio_old_sync);
+        radio_new_sync = resparam.res.addResource(modRes, R.id.radio_new_sync);
+//        btn_check = resparam.res.addResource(modRes, R.id.btn_check);
     }
 }
