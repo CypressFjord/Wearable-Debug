@@ -13,34 +13,40 @@
             android:id="@+id/radio_no_hook"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="方案0：不Hook" />
+            android:text="方案0：不Hook"
+            android:textColor="@android:color/black" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="适用于安卓14及以下或App版本3.45.0/targetSdk34及以下或支持勿扰规则同步的最新HyperOS系统和手环ROM" />
+            android:text="适用于安卓14及以下或App版本3.45.0/targetSdk34及以下或支持勿扰规则同步的最新HyperOS系统和手环ROM"
+            android:textColor="@android:color/black" />
 
         <RadioButton
             android:id="@+id/radio_old_sync"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="方案1：旧版勿扰同步" />
+            android:text="方案1：旧版勿扰同步"
+            android:textColor="@android:color/black" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="适用于较旧手环ROM，需要勾选系统框架作用域；定时勿扰需在手环上配置" />
+            android:text="适用于较旧手环ROM，需要勾选系统框架作用域；定时勿扰需在手环上配置"
+            android:textColor="@android:color/black" />
 
         <RadioButton
             android:id="@+id/radio_new_sync"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="方案2：新版勿扰同步" />
+            android:text="方案2：新版勿扰同步"
+            android:textColor="@android:color/black" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="适用于最新手环ROM配合非小米手机，需要勾选系统框架作用域；定时勿扰需在手机设置中配置" />
+            android:text="适用于最新手环ROM配合非小米手机，需要勾选系统框架作用域；定时勿扰需在手机设置中配置"
+            android:textColor="@android:color/black" />
     </RadioGroup>
 
     <!--    <Button-->
