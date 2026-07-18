@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
+import android.text.InputType;
+import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -21,6 +23,7 @@ import com.github.kyuubiran.ezxhelper.finders.MethodFinder;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Locale;
@@ -31,11 +34,13 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import test.hook.debug.xp.ui.DialogView;
+import test.hook.debug.xp.ui.ZenSyncModeView;
 import test.hook.debug.xp.utils.DexKit;
 import test.hook.debug.xp.utils.Save;
 import test.hook.debug.xp.utils.SignUtils;
@@ -80,8 +85,30 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         });
 
         view.addNode(Save.Type.WATCHFACE.getText(), v -> {
-            Save.status = Save.Type.WATCHFACE;
-            gotoDebugPage(loader, context);
+            AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+            dialog.setTitle("表盘安装方案");
+            dialog.setPositiveButton("方案1", (dialog1, which) -> {
+                Save.status = Save.Type.WATCHFACE;
+                gotoDebugPage(loader, context);
+            });
+            dialog.setNegativeButton("方案2", (dialog1, which) -> {
+                try {
+                    Class<?> faceClz = loader.loadClass(
+                            "com.xiaomi.fitness.watch.face.debug.designer.FaceDesignerFragment");
+                    XposedHelpers.callStaticMethod(
+                            loader.loadClass(
+                                    "com.xiaomi.fitness.watch.face.ext.FaceExtKt"),
+                            "gotoPage",
+                            context,
+                            faceClz,
+                            null       // Bundle = null
+                    );
+                } catch (Throwable t) {
+                    Log.ex("gotoPage FaceDesignerFragment failed", t);
+                }
+            });
+            dialog.setNeutralButton("Cancel", null);
+            dialog.show();
             result.dismiss();
         });
 
@@ -130,6 +157,10 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
                     text.setTextColor(context.getColor(android.R.color.primary_text_light));
                     text.setBackground(context.getDrawable(android.R.drawable.edit_text));
                     text.setHintTextColor(context.getColor(android.R.color.darker_gray));
+                    text.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                    text.setGravity(Gravity.TOP);
+                    text.setSingleLine(false);
+                    text.setHorizontallyScrolling(false);
 
                     StringBuilder sb = new StringBuilder();
                     for (Map.Entry<String, String[]> entry : obj.entrySet()) {
@@ -142,6 +173,35 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
             });
             result.dismiss();
         });
+
+        view.addNode(Save.Type.ZEN_SYNC.getText(), v -> {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+            ZenSyncModeView modeView = ZenSyncModeView.create(context);
+
+            int mode = context.getSharedPreferences("wearable_debug_preferences", Context.MODE_PRIVATE).getInt("zen_sync_mode", 0);
+            modeView.putZenSyncMode(mode);
+
+            dialog.setTitle("勿扰模式同步方案");
+            dialog.setView(modeView.getView());
+            dialog.setPositiveButton("Save", (dialog1, which) -> {
+                context.getSharedPreferences("wearable_debug_preferences", Context.MODE_PRIVATE).edit()
+                        .putInt("zen_sync_mode", modeView.getSelectedMode()).apply();
+                Toast.makeText(context, "重启小米运动健康后生效", Toast.LENGTH_SHORT).show();
+            });
+            dialog.setNegativeButton("Cancel", (dialog1, which) -> dialog1.cancel());
+            dialog.show();
+            result.dismiss();
+
+
+        });
+
+        view.addNode(Save.Type.ABOUT.getText(), v -> {
+            String url = "https://github.com/klxiaoniu/Wearable-Debug";
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(intent);
+            result.dismiss();
+        });
+
 
         return result;
     }
@@ -321,19 +381,6 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
             }
         });
 
-        // 显示系统设置-勿扰模式同步入口，并执行相关逻辑（旧版同步）
-//        try {
-//            XposedHelpers.findAndHookMethod("com.xiaomi.fitness.devicesettings.utils.ZenUtils", classLoader, "isSupportZenMode", classLoader.loadClass("com.xiaomi.fitness.device.manager.export.WearableDeviceModel"), new XC_MethodHook() {
-//                @Override
-//                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-//                    super.beforeHookedMethod(param);
-//                    param.setResult(true);
-//                }
-//            });
-//        } catch (NoSuchMethodError e) {
-//
-//        }
-
         try {
             // 修复：新版本日程导入适配了ColorOS，但是启用条件为厂商是oppo，导致一加无开关
             // Lcom/xiaomi/fitness/sync/util/CalendarUtils;->getNormalReminder(Landroid/content/Context;Landroid/database/Cursor;)I
@@ -347,7 +394,30 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
                 }
             });
         } catch (NoSuchMethodError e) {
+            Log.ex("OnePlus calendar import fix failed", e);
+        }
 
+        // FaceDesigner开关启用
+        try {
+            XposedHelpers.findAndHookMethod("com.xiaomi.fitness.watch.face.debug.designer.FaceDesignerFragment", classLoader, "onViewCreated", android.view.View.class, android.os.Bundle.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    super.afterHookedMethod(param);
+                    Object binding = XposedHelpers.callMethod(param.thisObject, "getMBinding");
+
+                    Class<?> targetClz = XposedHelpers.findClass("com.xiaomi.fitness.widget.SwitchButtonBindingTwoLineTextView", classLoader);
+                    for (Field field : binding.getClass().getFields()) {
+                        field.setAccessible(true);
+                        if (targetClz.isAssignableFrom(field.getType())) {
+                            field.setAccessible(true);
+                            Object view = field.get(binding);
+                            XposedHelpers.callMethod(view, "setEnable", true);
+                        }
+                    }
+                }
+            });
+        } catch (NoSuchMethodError | Exception e) {
+            Log.ex("FaceDesigner switch hook failed", e);
         }
     }
 
@@ -432,6 +502,28 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         }
     }
 
+    private static void loadZenModeHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        XSharedPreferences xsp = new XSharedPreferences(loadPackageParam.packageName, "wearable_debug_preferences");
+        int mode = xsp.getInt("zen_sync_mode", 0);
+        if (mode == 0) return;
+        if (mode == 1) {
+            // 显示系统设置-勿扰模式同步入口，并执行相关逻辑（旧版同步）
+            try {
+                XposedHelpers.findAndHookMethod("com.xiaomi.fitness.devicesettings.utils.ZenUtils", loadPackageParam.classLoader, "isSupportZenMode", loadPackageParam.classLoader.loadClass("com.xiaomi.fitness.device.manager.export.WearableDeviceModel"), new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        super.beforeHookedMethod(param);
+                        param.setResult(true);
+                    }
+                });
+            } catch (NoSuchMethodError | Exception e) {
+                Log.ex("Zen mode hook mode 1 failed", e);
+            }
+        } else if (mode == 2) {
+            ZenSync.INSTANCE.hook(loadPackageParam);
+        }
+    }
+
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws ClassNotFoundException {
         String packageName = loadPackageParam.packageName;
@@ -449,12 +541,14 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookInitPackageR
         DisableAd.interceptAd(loadPackageParam.classLoader);
         DisableAd.disableReport(loadPackageParam.classLoader);
         DisableAd.hideAqView(loadPackageParam.classLoader);
+        DisableAd.disableFaceEntranceConfig(loadPackageParam.classLoader);
 
         DisableKeepLinkNotify.disableDeviceSystemRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableTabRedDot(loadPackageParam.classLoader);
         DisableKeepLinkNotify.disableDialog(loadPackageParam.classLoader);
+        DisableKeepLinkNotify.disableUnlimitBanner(loadPackageParam.classLoader);
 
-        ZenSync.INSTANCE.hook(loadPackageParam);
+        loadZenModeHook(loadPackageParam);
 
         loadHook(loadPackageParam.classLoader);
         DexKit.INSTANCE.closeDexKit();

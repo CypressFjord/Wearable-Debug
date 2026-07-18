@@ -12,6 +12,8 @@ import com.github.kyuubiran.ezxhelper.EzXHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +30,7 @@ import test.hook.debug.xp.utils.Log;
 public class ZenSync {
     private static final String CLS_ZEN_SYNC_HELPER =
             "com.xiaomi.fitness.devicesettings.common.zenmode.ZenModeSyncHelper";
-    private static final String CLS_ZEN_RULE = "mnq";
+    private String CLS_ZEN_RULE;
     private ContentObserver mZenObserver;
 
     public static ZenSync INSTANCE = new ZenSync();
@@ -143,6 +145,25 @@ public class ZenSync {
         // 只处理手动规则（isManual=true），忽略自动规则
         // ================================================================
         try {
+//            Lcom/xiaomi/fitness/devicesettings/common/zenmode/ZenModeSyncHelper;->getMiuiZenRules(Landroid/content/Context;)Ljava/util/List;
+            Method method = XposedHelpers.findMethodExact(CLS_ZEN_SYNC_HELPER, lpparam.classLoader, "getMiuiZenRules", Context.class);
+            // 获取方法声明的泛型返回类型（包含 List<T> 中的 T）
+            Type genericReturnType = method.getGenericReturnType();
+
+//            if (genericReturnType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericReturnType;
+            // 获取实际的类型参数数组（List 只有一个泛型参数）
+            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+            if (actualTypeArguments.length > 0) {
+                Type elementType = actualTypeArguments[0];
+
+                // 如果是一个具体的 Class，可以直接强转
+                if (elementType instanceof Class) {
+                    Class<?> clazz = (Class<?>) elementType;
+                    Log.ix("CLS_ZEN_RULE: " + clazz.getName());
+                    CLS_ZEN_RULE = clazz.getName();
+                }
+            }
             Class<?> mnqClass = lpparam.classLoader.loadClass(CLS_ZEN_RULE);
             Class<?> mnqAClass = null;
             // 找到 mnq$a：包含 mnq[] 数组字段的内部类
